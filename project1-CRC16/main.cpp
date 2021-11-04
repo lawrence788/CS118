@@ -175,7 +175,7 @@ char* parserOgMsg(char crcMsg[], char gen[]){
 	// cout << "parser : " ;
 	// cout << len << endl;
 	char* msg = new char[len];
-	//msg[len] = '\0';
+	msg[len] = '\0';
 	// cout << "crcmsg----->"<<strlen(crcMsg) << endl;
 	// cout << "the len is ";
 	// cout << len << endl;
@@ -190,7 +190,7 @@ char* parserOgMsg(char crcMsg[], char gen[]){
 	 // cout << "parser function: "; 
 	 // cout << msg << endl;
 	 //cout << "crc----->"<<strlen(crc) << endl;
-	msg[len+1]='\0';
+	//msg[len+1]='\0';
 	return msg;
 }
 
@@ -205,12 +205,12 @@ bool crcValidator(char* crcMsg, char* gen ){
  	//cout << strlen(ogMsg) << endl;
 
  	//cout << "after calling parser ";
- 	//cout << ogMsg << endl;
- 	//cout << crc << endl;
+ 	// cout << ogMsg << endl;
+ 	// cout << crc << endl;
 	char* crc_v = calCrc(ogMsg, gen, 'm');
 	// cout << "calling crc_v ";
 	// cout<<crc_v<< endl;
-	// cout << crcMsg <<endl;
+	// cout<< crcMsg <<endl;
 
 	if(strcmp(crc_v, crcMsg) == 0)
 		return true;
