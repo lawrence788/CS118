@@ -311,22 +311,15 @@ bool comp(char* msg, char* ogMsg){
 	int count = 0;
 	for(int i = 0; i < strlen(msg); i++){
 		if(msg[i] != ogMsg[i]){
-			count++;
-		}
-		if(count > 4){
 			return false;
 		}
 	}
 
-	if(count == 4 ){
-		return true;
-	}
-
-	return false;
+	return true;
 
 }
 
-int fact(int n) {
+double fact(int n) {
    if (n == 0 || n == 1)
    	return 1;
    else
@@ -356,9 +349,9 @@ void detectRandFour(char* msg, char* gen){
 					//char* crc = calCrc(msg, gen);
 					char cp[size];
 					cp[size] = '\0';
-					strncpy(cp, msg,size);
+					bitSetter(cp,msg,size,'c');
 					char* crc = calCrc(cp, gen);
-					if(strcmp(crc, crcErr) == 0)
+					if(comp(crc, crcErr))
 						cout << msg << endl;
 					msg[l] = flipBit(msg[l]);
 				}
@@ -373,8 +366,11 @@ void detectRandFour(char* msg, char* gen){
 //get the number of 2 bit undetected errors 
 int detectRandTwo(char* msg, char* gen){
 	int size = strlen(msg);
+	//cout << "detectRandTwo size " << size << endl;
 	char* crcErr = fillZeros(gen);
+	//cout << "crcERR ::: "<<crcErr << endl;
 	int count = 0;
+	int tot_count =0;
 
 	for(int i =0; i< size; i++){
 		msg[i] = flipBit(msg[i]);
@@ -382,25 +378,35 @@ int detectRandTwo(char* msg, char* gen){
 			msg[j] = flipBit(msg[j]);
 			char cp[size];
 			cp[size] = '\0';
-			strncpy(cp, msg,size);
+			bitSetter(cp,msg,size,'c');
+			//strncpy(cp, msg,size);
+			// cout << "-----" << endl;
+			// cout << cp << endl;
 			char* crc = calCrc(cp, gen);
-			if(strcmp(crc, crcErr) == 0){
+			// cout<< crc << endl;
+			// cout << "-----" << endl;
+			if(comp(crc, crcErr)){
 				count++;
-				cout<< msg << endl;
+				//cout << cp << endl;
+				//cout<< crc << endl;
 			}	
 			msg[j] = flipBit(msg[j]);
+			tot_count++;
 
 		}
 		msg[i] = flipBit(msg[i]);
 	}
 
+	// cout << "tot is " <<endl;
+	// cout << tot_count <<endl;
+ 
 	return count;
 
 }
 
 
 
-int undetected_N_bits(char* msg,char* gen,int N, char opt = ' '){
+int undetected_N_bits(char* msg,char* gen, int N, char opt = ' '){
 	
 	char* msgcrc = calCrc(msg,gen, 'm');
 	//char msgcrc[] = "10011001";
@@ -431,6 +437,8 @@ int main(int argc, char *argv[]){
 	int start = 0;
 	
 	double perm;
+	int tot;
+	int r;
 	double toterror;
 	double fraction;
 
@@ -468,21 +476,17 @@ int main(int argc, char *argv[]){
 				undetected_N_bits(optarg, gen,4, 'p');
 				break;
 			case 't':
-				//cout << "fraction of Undetected 2 biterrors \n";
-				msg = new char[strlen(optarg)];
-				msg[strlen(optarg)] = '\0';
-				for(int i =0; i < strlen(optarg); i++){
-					msg[i] = optarg[i];
-				}
-				// cout<<"setting :";
-				// cout<<msg<<endl;
-				msgcrc = calCrc(optarg, gen, 'm');
-				// cout << "the length of msgcrc is " ;
-				//cout << msgcrc << endl;
-				perm = fact(strlen(msgcrc)) / fact(strlen(msgcrc) - 2);
+				// cout << "the length of msgcrc is " <<endl;
+				// cout << optarg << endl;
+				// cout << "-----" << endl;
+				tot = strlen(optarg)+strlen(gen)-1;
+				r = 2;
+				perm = fact(tot) / fact(tot-2);
 				//cout << "call undetected" << endl;
-				//cout<<strlen(msg)<<endl;
-				toterror = (double)undetected_N_bits(msg, gen, 2);
+				//cout<<optarg<<endl;
+				toterror = (double)undetected_N_bits(optarg, gen, 2);
+				//cout << "----" << endl;
+				//cout << perm << endl;
 				fraction = toterror / perm;
 				cout << fraction << endl;
 				//cout <<"\n";
