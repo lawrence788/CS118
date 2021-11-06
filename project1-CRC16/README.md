@@ -1,4 +1,4 @@
-Author. Raywen Wu (Ray W.)
+Raywen Wu (Ray W.)
 UID 705330558
 
 # CRC16 Experiement 

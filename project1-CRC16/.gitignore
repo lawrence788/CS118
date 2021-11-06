@@ -3,3 +3,5 @@ crc16
 test.cpp
 *.out
 crcExperiments
+*.tar.gz
+.DS_Store
