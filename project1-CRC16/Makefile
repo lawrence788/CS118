@@ -2,7 +2,7 @@ CC = g++
 CFLAGES = -Wall
 OBJS = main.o
 main: ${OBJS}
-	$(CC) -o crc16 ${OBJS}
+	$(CC) -o crcExperiments ${OBJS}
 
 clean:
-	rm -f crc16 ${OBJS}
+	rm -f crcExperiments ${OBJS}

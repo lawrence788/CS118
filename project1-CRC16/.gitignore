@@ -2,3 +2,4 @@ crc16
 *.o
 test.cpp
 *.out
+crcExperiments

@@ -67,7 +67,20 @@ void bitSetter(char* receiver, char* setter,int genlen, char op){
 	if(op == 'c'){
 		for(int i=0; i< genlen; i++){
 			receiver[i] = setter[i]; 
+			if(receiver[i] != '0' && receiver[i] != '1'){
+				// cout << "got this set: " << setter[i] <<" at "<< i <<endl;
+				// cout << "got this rec: " << receiver[i]<<" at "<< i <<endl;
+				receiver[i] ='0';
+				setter[i] ='0';
+				// cout << "after fixed.: " << receiver[i]<< " at "<< i <<endl;
+				// cout << "after fixed.: " << setter[i]<< " at "<< i <<endl;
+			}
 		}
+
+
+		// cout << "aftcopy--->";
+		// cout << receiver << endl;
+
 	} else if(op == 's'){
 		genlen-=1;
 		for(int i=0; i< genlen; i++){
@@ -96,18 +109,20 @@ char* calCrc(char* data, char* gen, char opt =' ')
 	int codelen;                
 
 	extendData = addTail(extendData, genlen, &codelen);
-	// cout << "--------=====\n" << endl;
-	// cout << extendData << endl;
+	//cout << "--------=====\n" << endl;
+	//cout << extendData << endl;
 	// cout << "cur data len: ";
 	// cout << codelen << endl;
 	// cout << "";
-	char* temp = new char[256];
-	char* remBits = new char[256];
-
+	char* temp = (char*)malloc(sizeof(char) * genlen);
+	//temp[genlen] ='\0';
+	char* remBits = (char*)malloc(sizeof(char) * codelen);
+	//remBits = '\0';
+	//cout << strlen(remBits) << "<--- size of rembit" << endl;
 	//set remainder same as the msg that extends with n-1 crc size
 	                   //considering n bits of data for each step of binary division/EXOR 
 	bitSetter(remBits, extendData, genlen, 'c');
-	// cout << remBits << endl;
+	//cout << remBits << endl;
 	// cout << codelen << endl;
 	// cout <<">>>>>>>>>>>>>>>>>>"<<endl;
 	for(int i=genlen;i<=codelen;i++)
@@ -115,9 +130,18 @@ char* calCrc(char* data, char* gen, char opt =' ')
 		// record the previous remainder for the next divident
 		bitSetter(temp,remBits, genlen, 'c');	                  
 		//if 1's bit of remainder is not '0' then xor the divident with generator
+		// cout << "current--->" << temp << endl; 
+		// cout << "generat--->" << gen << endl;
 	    if(remBits[0] !='0'){ 
-	    	for(int j=0;j<genlen-1;j++)
+	    	//cout << "curBits--->" << remBits << endl;
+	    	for(int j=0;j<genlen-1;j++){
+	    		//cout << j <<" : " <<temp[j+1] << " XOR " << gen[j+1] << " = ";
 	            exor(temp[j+1],gen[j+1], &(remBits[j]));
+	            // cout <<  remBits[j] << endl;
+	            // cout << remBits << endl;
+	        }
+	        // remBits[genlen] ='0';
+	        //cout << "fremBit--->" << remBits <<"[16]->" <<remBits[16] << endl;
 	    }else{ 
 	    //else if it's '0', then shift the string by 1 bit
 	        bitSetter(remBits, temp, genlen,'s');     
@@ -157,7 +181,8 @@ char* parserCrc(char crcMsg[], char gen[]){
 	
 	int len = strlen(crcMsg) - (strlen(gen) - 1);
 	int j =0;
-	char* msg = new char[strlen(gen)-1];
+	char* msg = (char*)malloc(sizeof(char) * len);
+	msg[len] ='\0';
 	for(int i = len; i < strlen(crcMsg); i++){
 		
 		char bit = crcMsg[i];
@@ -170,11 +195,23 @@ char* parserCrc(char crcMsg[], char gen[]){
 	return msg;
 }
 
+bool comp(char* msg, char* ogMsg){
+	int count = 0;
+	for(int i = 0; i < strlen(msg); i++){
+		if(msg[i] != ogMsg[i]){
+			return false;
+		}
+	}
+
+	return true;
+
+}
+
 char* parserOgMsg(char crcMsg[], char gen[]){
 	int len = strlen(crcMsg) - (strlen(gen) - 1);
 	// cout << "parser : " ;
 	// cout << len << endl;
-	char* msg = new char[len];
+	char* msg = (char*)malloc(sizeof(char) * len);
 	msg[len] = '\0';
 	// cout << "crcmsg----->"<<strlen(crcMsg) << endl;
 	// cout << "the len is ";
@@ -188,43 +225,11 @@ char* parserOgMsg(char crcMsg[], char gen[]){
 		}
 	}
 	 // cout << "parser function: "; 
-	 // cout << msg << endl;
+	 //cout << msg << endl;
 	 //cout << "crc----->"<<strlen(crc) << endl;
 	//msg[len+1]='\0';
 	return msg;
 }
-
-bool crcValidator(char* crcMsg, char* gen ){
-   if(strlen(crcMsg) < strlen(gen))
- 		return false;
- 	char* crc;
- 	
- 	char* ogMsg = parserOgMsg(crcMsg,gen);
- 	crc = parserCrc(crcMsg,gen);
- 	// cout << ")))))))))))" <<endl;
- 	//cout << strlen(ogMsg) << endl;
-
- 	//cout << "after calling parser ";
- 	// cout << ogMsg << endl;
- 	// cout << crc << endl;
-	char* crc_v = calCrc(ogMsg, gen, 'm');
-	// cout << "calling crc_v ";
-	// cout<<crc_v<< endl;
-	// cout<< crcMsg <<endl;
-
-	if(strcmp(crc_v, crcMsg) == 0)
-		return true;
-	return false;
-// 	cout << parsedMsg <<endl;
-// 	u64 crc_t = covertBitString(crc);
-	// if(hasRem(crc_v))
-	// 	return false;
-	// return true;
-// 	if(crc_t == crc_v)
-// 		return true;
- 	//return false;
-}
-
 char* fillZeros(char* gen){
 
 	int len = strlen(gen)-1;
@@ -241,6 +246,65 @@ char* fillZeros(char* gen){
 	// cout << "---"<<endl;
 	return zeros;
 }
+
+
+
+bool crcValidator(char* crcMsg, char* gen ){
+   if(strlen(crcMsg) < strlen(gen))
+ 		return false;
+    
+    //crc = parserCrc(crcMsg,gen);
+
+ 	if(strlen(crcMsg) > 32){
+ 		char* crc = fillZeros(gen);
+ 		char* crc_v = calCrc(crcMsg, gen);
+ 		if(comp(crc_v, crc))
+			return true;
+		return false;
+
+ 	}else{
+	 	char* crc;
+	 	int len = strlen(crcMsg) - (strlen(gen) - 1);
+	 	// cout << "input : ";
+	 	// cout << crcMsg << "----->";
+	 	// cout << strlen(crcMsg) << endl;
+
+	 	char* ogMsg = parserOgMsg(crcMsg,gen);
+
+	 	// cout << "after calling parser ";
+	 	// cout << ogMsg << "----->" ;
+	 	// cout << strlen(ogMsg) << endl;
+
+	 	char* crc_v = calCrc(ogMsg, gen);
+	 // 	cout << "calling crc_v \n";
+		// cout<<crc_v<< "----->";
+		// cout << strlen(crc_v) << endl;
+
+	 	crc = parserCrc(crcMsg,gen);
+	 	// cout << "calling og crc ";
+	 	// cout << crc << "----->";
+	 	// cout << strlen(crc) << endl;
+
+	 	// cout << "after calling parser ";
+	 	// cout << ogMsg << endl;
+	 	// cout << crc << endl;
+		
+		
+		//cout<< crcMsg <<endl;
+	 	if(comp(crc_v, crc))
+			return true;
+		return false;
+	}
+// 	cout << parsedMsg <<endl;
+// 	u64 crc_t = covertBitString(crc);
+	// if(hasRem(crc_v))
+	// 	return false;
+	// return true;
+// 	if(crc_t == crc_v)
+// 		return true;
+ 	//return false;
+}
+
 
 char* addGen(char* msg,char* gen){
 	char* result = new char[strlen(msg)];
@@ -307,17 +371,7 @@ char* produce_err(char* msgcrc, char* err){
 	return result;
 }
 
-bool comp(char* msg, char* ogMsg){
-	int count = 0;
-	for(int i = 0; i < strlen(msg); i++){
-		if(msg[i] != ogMsg[i]){
-			return false;
-		}
-	}
 
-	return true;
-
-}
 
 double fact(int n) {
    if (n == 0 || n == 1)
@@ -411,15 +465,15 @@ int undetected_N_bits(char* msg,char* gen, int N, char opt = ' '){
 	char* msgcrc = calCrc(msg,gen, 'm');
 	//char msgcrc[] = "10011001";
 	int count =0;
-	cout << msgcrc << endl;
-	cout << "------" <<endl;
+	// cout << msgcrc << endl;
+	// cout << "------" <<endl;
 	if(N == 4){
 		detectRandFour(msgcrc, gen);
 	}
 
 	if(N == 2){
 		count = detectRandTwo(msgcrc, gen);
-		cout << "tot undetected is " << count << endl;
+		//cout << "tot undetected is " << count << endl;
 	}
 
 	return count;
@@ -473,7 +527,7 @@ int main(int argc, char *argv[]){
 			case 'f':
 			//Spec3 list all undetected 4 errors 
 				//cout << "calling " << endl;
-				undetected_N_bits(optarg, gen,4, 'p');
+				undetected_N_bits(optarg, gen, 4, 'p');
 				break;
 			case 't':
 				// cout << "the length of msgcrc is " <<endl;
@@ -481,13 +535,15 @@ int main(int argc, char *argv[]){
 				// cout << "-----" << endl;
 				tot = strlen(optarg)+strlen(gen)-1;
 				r = 2;
-				perm = fact(tot) / fact(tot-2);
+				perm = fact(tot) / (2*fact(tot-2));
 				//cout << "call undetected" << endl;
 				//cout<<optarg<<endl;
 				toterror = (double)undetected_N_bits(optarg, gen, 2);
 				//cout << "----" << endl;
 				//cout << perm << endl;
 				fraction = toterror / perm;
+				if(fraction == 0)
+					break;
 				cout << fraction << endl;
 				//cout <<"\n";
 				break;
