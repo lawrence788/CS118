@@ -7,4 +7,4 @@ CRC Experiments, recreate CRC16 scheme with C++
 
 ## Project2 
 
-TBD-  
+Router implementation, send data from end to end with C++  
